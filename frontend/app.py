@@ -6,6 +6,9 @@ import base64
 import time
 from geopy.geocoders import Nominatim  # For address-to-coordinates conversion
 
+# Backend URL for Render deployment
+BACKEND_URL = "https://herhealth.onrender.com"
+
 # Function to encode images as base64
 def get_base64_of_image(file_path):
     try:
@@ -23,7 +26,7 @@ st.set_page_config(page_title="HerHealth", page_icon="assets/gynae_genius.png", 
 maternal_bg_base64 = get_base64_of_image("assets/maternal-bg.jpg")
 hero_bg_base64 = get_base64_of_image("assets/hero-bg.jpg")
 
-# CSS for styling with improvements
+# CSS for styling
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -96,15 +99,15 @@ st.markdown(f"""
         gap: 15px;
     }}
     .navbar-brand img {{
-        height: 60px; /* Increased size of the image */
+        height: 60px;
         border-radius: 50%;
         border: 2px solid #FFFFFF;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        margin-left: 20px; /* Adjusted position */
+        margin-left: 20px;
     }}
     .navbar-brand h1 {{
-        color: #FFD700; /* Changed color to gold */
-        font-size: 40px; /* Increased font size */
+        color: #FFD700;
+        font-size: 40px;
         font-weight: 700;
         margin: 0;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -527,44 +530,6 @@ st.markdown(f"""
         margin: 0;
         line-height: 1.5;
     }}
-    .janani-message-content ul {{
-        list-style-type: none;
-        padding: 0;
-        margin: 10px 0;
-    }}
-    .janani-message-content li {{
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 15px;
-        padding: 10px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }}
-    .janani-message-content li:hover {{
-        background: rgba(255, 255, 255, 0.4);
-        transform: translateX(5px);
-    }}
-    .janani-message-content li i {{
-        color: #F06292;
-        font-size: 18px;
-        margin-top: 3px;
-    }}
-    .janani-message-content li div {{
-        flex: 1;
-    }}
-    .janani-message-content li strong {{
-        color: #FFFFFF;
-        font-weight: 600;
-    }}
-    .janani-message-content .signature {{
-        font-style: italic;
-        font-size: 14px;
-        margin-top: 10px;
-        text-align: right;
-        color: #FFFFFF;
-    }}
     .quick-replies {{
         display: flex;
         gap: 10px;
@@ -673,10 +638,9 @@ nav_items = {
 
 # Navigation Bar
 st.markdown('<div class="navbar"><div class="navbar-brand">', unsafe_allow_html=True)
-st.image("assets/gynae_genius.png", width=60)  # Adjusted width to match CSS
+st.image("assets/gynae_genius.png", width=60)
 st.markdown('<h1>HerHealth</h1></div><div class="navbar-menu">', unsafe_allow_html=True)
 
-# Use columns to layout the navbar items
 cols = st.columns(len(nav_items))
 for i, (page_id, (page_name, icon_class)) in enumerate(nav_items.items()):
     with cols[i]:
@@ -789,7 +753,7 @@ with st.container():
         city = st.text_input("Enter your city", placeholder="e.g., Mumbai", key="weather_input")
         if st.button("Get Weather", key="weather_button"):
             if city:
-                api_key = os.getenv("OPENWEATHER_API_KEY", "ec7375ca788a1ea63ea37b54733f4241")
+                api_key = os.getenv("WEATHER_API_KEY", "ec7375ca788a1ea63ea37b54733f4241")
                 weather_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
                 try:
                     response = requests.get(weather_url)
@@ -825,7 +789,6 @@ with st.container():
         st.markdown('<p style="text-align: center; font-size: 18px; color: #555; margin-bottom: 15px;">Press the SOS button below to send your current location to emergency contacts.</p>', unsafe_allow_html=True)
         st.markdown('<div class="sos-warning"><i class="fas fa-exclamation-triangle"></i> This will send your location to emergency contacts immediately!</div>', unsafe_allow_html=True)
 
-        # Add a toggle for manual location input
         use_manual_location = st.checkbox("Use manual location (if detected location is inaccurate)", value=False)
 
         if use_manual_location:
@@ -874,7 +837,6 @@ with st.container():
                 latitude = None
                 longitude = None
         else:
-            # Use IP-based geolocation as a fallback (using ipinfo for better accuracy)
             g = geocoder.ipinfo('me')
             location = g.latlng
             if location:
@@ -906,7 +868,7 @@ with st.container():
             if latitude is not None and longitude is not None:
                 try:
                     with st.spinner("Sending alert..."):
-                        response = requests.post("http://127.0.0.1:8000/sos", json={
+                        response = requests.post(f"{BACKEND_URL}/sos", json={
                             "latitude": latitude,
                             "longitude": longitude,
                             "emergency_contacts": ["+917671824338", "+919380115248", "+918660543482", "+91741960900", "+917075735181"]
@@ -982,52 +944,13 @@ with st.container():
         for message in st.session_state.messages:
             message_class = "assistant" if message["role"] == "assistant" else "human"
             avatar = "https://img.icons8.com/color/48/000000/chatbot.png" if message["role"] == "assistant" else "https://img.icons8.com/ios-filled/50/000000/user.png"
-            
-            # Format the response for "What are common health problems?" specifically
-            if message["content"].startswith("Dear patient, as a maternal health assistant"):
-                formatted_content = """
-                <div class="janani-message-content">
-                    <p>Dear patient, as a maternal health assistant, I'm here to help you understand some of the common health problems that women might face during pregnancy and post-pregnancy. Here are some conditions:</p>
-                    <ul>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <div>
-                                <strong>Anemia:</strong> This condition occurs when the body does not have enough healthy red blood cells to carry adequate oxygen to parts of the body, which can lead to fatigue and weakness.
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <div>
-                                <strong>Gestational Diabetes:</strong> A type of diabetes that develops during pregnancy and usually disappears after giving birth. It can cause high blood sugar levels in pregnant women.
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <div>
-                                <strong>Preeclampsia:</strong> A condition that occurs after 20 weeks of pregnancy, characterized by high blood pressure and damage to organs such as the kidneys and liver.
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <div>
-                                <strong>Thyroid Disorders:</strong> Hypothyroidism (underactive thyroid) or hyperthyroidism (overactive thyroid) can affect pregnancy and postpartum health.
-                            </div>
-                        </li>
-                    </ul>
-                    <p>Please remember that every woman's experience is unique, and these conditions may not affect everyone. If you have any concerns about your health during pregnancy or post-pregnancy, it’s important to speak with a healthcare provider for guidance and support. Take care of yourself and your baby!</p>
-                    <p class="signature">Sincerely,<br>Janani (Maternal Health Assistant)</p>
-                </div>
-                """
-            else:
-                formatted_content = f'<div class="janani-message-content"><p>{message["content"]}</p></div>'
-            
+            formatted_content = f'<div class="janani-message-content"><p>{message["content"]}</p></div>'
             st.markdown(
                 f'<div class="janani-message {message_class}"><img src="{avatar}" alt="Avatar">{formatted_content}</div>',
                 unsafe_allow_html=True
             )
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Quick replies
         st.markdown('<div class="quick-replies">', unsafe_allow_html=True)
         quick_replies = [
             "What are common pregnancy symptoms?",
@@ -1042,7 +965,7 @@ with st.container():
                     st.session_state.messages.append({"role": "human", "content": reply})
                     with st.spinner("Janani is thinking..."):
                         try:
-                            response = requests.post("http://127.0.0.1:8000/chat", json={"question": reply})
+                            response = requests.post(f"{BACKEND_URL}/chat", json={"question": reply})
                             response.raise_for_status()
                             answer = response.json().get("answer", "Sorry, I couldn’t process your request.")
                         except requests.exceptions.RequestException as e:
@@ -1051,18 +974,14 @@ with st.container():
                     st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Chat input and clear button
         col1, col2 = st.columns([3, 1])
         with col1:
-            question = st.chat_input(
-                "Ask Janani a question...",
-                key="janani_input"
-            )
+            question = st.chat_input("Ask Janani a question...", key="janani_input")
             if question:
                 st.session_state.messages.append({"role": "human", "content": question})
                 with st.spinner("Janani is thinking..."):
                     try:
-                        response = requests.post("http://127.0.0.1:8000/chat", json={"question": question})
+                        response = requests.post(f"{BACKEND_URL}/chat", json={"question": question})
                         response.raise_for_status()
                         answer = response.json().get("answer", "Sorry, I couldn’t process your request.")
                     except requests.exceptions.RequestException as e:
@@ -1074,7 +993,6 @@ with st.container():
                 st.session_state.messages = [{"role": "assistant", "content": "Hello! I'm Janani, your maternal health assistant. How can I help you today?"}]
                 st.rerun()
 
-        # Auto-scroll
         st.markdown('<script>document.getElementById("chat-container").scrollTop = document.getElementById("chat-container").scrollHeight;</script>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1095,7 +1013,7 @@ with st.container():
         if st.button("Predict Health Risk", key="predict_health_button"):
             with st.spinner("Analyzing..."):
                 try:
-                    response = requests.post("http://127.0.0.1:8000/predict_risk", json={
+                    response = requests.post(f"{BACKEND_URL}/predict_risk", json={
                         "age": age, "systolic_bp": systolic_bp, "diastolic_bp": diastolic_bp,
                         "bs": bs, "body_temp": body_temp, "heart_rate": heart_rate
                     })
@@ -1154,7 +1072,7 @@ with st.container():
         if st.button("Predict Fetal Health", key="predict_fetal_button"):
             with st.spinner("Analyzing..."):
                 try:
-                    response = requests.post("http://127.0.0.1:8000/predict_fetal_health", json={
+                    response = requests.post(f"{BACKEND_URL}/predict_fetal_health", json={
                         "baseline_value": baseline_value,
                         "accelerations": accelerations,
                         "fetal_movement": fetal_movement,
