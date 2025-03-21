@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -16,7 +17,9 @@ important_features = [
 def initialize_fetal_model():
     global model, scaler
     try:
-        fetal_health_df = pd.read_csv(r"c:\Users\kanam\OneDrive\Desktop\weal\gynae\data\fetal_health.csv")
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        dataset_path = os.path.join(BASE_DIR, "data", "fetal_health.csv")
+        fetal_health_df = pd.read_csv(dataset_path)
         fetal_health_df.drop_duplicates(inplace=True)
     except FileNotFoundError:
         print("Error: Fetal health dataset not found.")
@@ -55,7 +58,9 @@ if __name__ == "__main__":
     from sklearn.feature_selection import SelectFromModel
     from statistics import mean
 
-    fetal_health_df = pd.read_csv(r"c:\Users\kanam\OneDrive\Desktop\weal\gynae\data\fetal_health.csv")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    dataset_path = os.path.join(BASE_DIR, "data", "fetal_health.csv")
+    fetal_health_df = pd.read_csv(dataset_path)
     fetal_health_df.drop_duplicates(inplace=True)
 
     print("Dataset Shape:", fetal_health_df.shape)
