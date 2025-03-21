@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+streamlit
+streamlit-lottie
+requests
+pyarrow
+geocoder
+numpy 
+pandas 
+scikit-learn 
+matplotlib 
+seaborn
+geopy
+pydantic
+python-dotenv
+twilio
+ollama
