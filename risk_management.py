@@ -1,8 +1,11 @@
+import os
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Global variables
 scaler = None
@@ -11,7 +14,7 @@ label_encoder = None
 
 def initialize_risk_model():
     global scaler, best_rf, label_encoder
-    dataset_path = r'c:\Users\kanam\OneDrive\Desktop\weal\gynae\data\Maternal Health Risk Data Set.csv'
+    dataset_path = os.path.join(BASE_DIR, "data", "Maternal Health Risk Data Set.csv")
     df = pd.read_csv(dataset_path)
     
     label_encoder = LabelEncoder()
