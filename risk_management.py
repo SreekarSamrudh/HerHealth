@@ -1,11 +1,9 @@
-import os
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+import os
 
 # Global variables
 scaler = None
@@ -14,8 +12,14 @@ label_encoder = None
 
 def initialize_risk_model():
     global scaler, best_rf, label_encoder
+    # Use relative path
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     dataset_path = os.path.join(BASE_DIR, "data", "Maternal Health Risk Data Set.csv")
-    df = pd.read_csv(dataset_path)
+    try:
+        df = pd.read_csv(dataset_path)
+    except FileNotFoundError:
+        print("Error: Maternal health dataset not found.")
+        raise
     
     label_encoder = LabelEncoder()
     df['RiskLevel'] = label_encoder.fit_transform(df['RiskLevel'])
@@ -59,7 +63,10 @@ if __name__ == "__main__":
     from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
     
     initialize_risk_model()
-    df = pd.read_csv(r'c:\Users\kanam\OneDrive\Desktop\weal\gynae\data\Maternal Health Risk Data Set.csv')
+    # Use relative path here too
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    dataset_path = os.path.join(BASE_DIR, "data", "Maternal Health Risk Data Set.csv")
+    df = pd.read_csv(dataset_path)
     df['RiskLevel'] = label_encoder.fit_transform(df['RiskLevel'])
     X = df[['Age', 'SystolicBP', 'DiastolicBP', 'BS', 'BodyTemp', 'HeartRate']]
     y = df['RiskLevel']
