@@ -4,10 +4,10 @@ import requests
 import geocoder
 import base64
 import time
-from geopy.geocoders import Nominatim  # For address-to-coordinates conversion
+from geopy.geocoders import Nominatim  
 
 # Backend URL for Render deployment
-BACKEND_URL = "https://herhealth.onrender.com"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 # Function to encode images as base64
 def get_base64_of_image(file_path):
