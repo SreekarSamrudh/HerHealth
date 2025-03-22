@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 from fetus_health import predict_fetal_health, initialize_fetal_model
 from risk_management import predict_risk, initialize_risk_model  
 
-# Load environment variables from .env file
-logger = logging.getLogger(__name__)  # Move logger setup before load_dotenv
+# Logger setup
+logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 logger.info(f"Current working directory: {os.getcwd()}")
@@ -25,21 +25,28 @@ else:
 
 load_dotenv()
 
-# Log the loaded environment variables
 logger.info(f"TWILIO_ACCOUNT_SID after load_dotenv: {'Set' if os.getenv('TWILIO_ACCOUNT_SID') else 'Not set'}")
 logger.info(f"TWILIO_AUTH_TOKEN after load_dotenv: {'Set' if os.getenv('TWILIO_AUTH_TOKEN') else 'Not set'}")
 logger.info(f"TWILIO_PHONE_NUMBER after load_dotenv: {'Set' if os.getenv('TWILIO_PHONE_NUMBER') else 'Not set'}")
 
 app = FastAPI()
 
+# Fix 1: Add root endpoint to prevent 404 on health checks
+@app.get("/")
+async def root():
+    logger.info("Root endpoint called")
+    return {"message": "Welcome to HerHealth API"}
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Initializing models...")
     if not initialize_fetal_model():
         logger.error("Failed to initialize fetal health model.")
-    else:
-        logger.info("Fetal health model initialized.")
-    initialize_risk_model()
+        raise RuntimeError("Fetal health model initialization failed")  # Fail fast
+    logger.info("Fetal health model initialized.")
+    if not initialize_risk_model():
+        logger.error("Failed to initialize risk model.")
+        raise RuntimeError("Risk model initialization failed")  # Fail fast
     logger.info("Risk model initialized.")
 
 class SOSRequest(BaseModel):
@@ -89,55 +96,58 @@ async def send_sos(request: SOSRequest):
         auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         from_number = os.getenv("TWILIO_PHONE_NUMBER")
         
-        logger.info(f"TWILIO_ACCOUNT_SID: {'Set' if account_sid else 'Not set'}")
-        logger.info(f"TWILIO_AUTH_TOKEN: {'Set' if auth_token else 'Not set'}")
-        logger.info(f"TWILIO_PHONE_NUMBER: {'Set' if from_number else 'Not set'}")
+        if not all([account_sid, auth_token, from_number]):
+            logger.error("Missing Twilio credentials")
+            raise ValueError("Twilio credentials are not fully set")
 
-        if account_sid and auth_token and from_number:
-            client = Client(account_sid, auth_token)
-            sent_messages = []
-            for contact in request.emergency_contacts:
-                maps_link = f"https://www.google.com/maps?q={request.latitude},{request.longitude}"
-                message_body = f"EMERGENCY ALERT: Help needed at Latitude: {request.latitude}, Longitude: {request.longitude}! View location: {maps_link}"
-                try:
-                    message = client.messages.create(body=message_body, from_=from_number, to=contact)
-                    logger.info(f"Alert queued for {contact}, SID: {message.sid}")
-                    import time
-                    time.sleep(5)
-                    updated_message = client.messages(message.sid).fetch()
-                    status = updated_message.status
-                    logger.info(f"Message status for {contact}: {status}")
-                    sent_messages.append({"contact": contact, "sid": message.sid, "status": status})
-                except Exception as e:
-                    logger.error(f"Failed to send alert to {contact}: {str(e)}")
-                    sent_messages.append({"contact": contact, "error": str(e)})
-            all_delivered = all(msg.get("status") == "delivered" for msg in sent_messages if "status" in msg)
-            return {
-                "message": "SOS alert processed",
-                "sent_messages": sent_messages,
-                "simulated": False,
-                "all_delivered": all_delivered
-            }
-        else:
-            logger.info("Twilio credentials not found, simulating message")
-            for contact in request.emergency_contacts:
-                logger.info(f"Would send alert to {contact} - SIMULATION ONLY")
-            return {"message": "SOS alert simulated (Twilio credentials missing)", "simulated": True, "all_delivered": False}
+        client = Client(account_sid, auth_token)
+        sent_messages = []
+        for contact in request.emergency_contacts:
+            maps_link = f"https://www.google.com/maps?q={request.latitude},{request.longitude}"
+            message_body = f"EMERGENCY ALERT: Help needed at Latitude: {request.latitude}, Longitude: {request.longitude}! View location: {maps_link}"
+            try:
+                message = client.messages.create(body=message_body, from_=from_number, to=contact)
+                logger.info(f"Alert queued for {contact}, SID: {message.sid}")
+                import time
+                time.sleep(5)  # Wait to check status
+                updated_message = client.messages(message.sid).fetch()
+                status = updated_message.status
+                logger.info(f"Message status for {contact}: {status}")
+                sent_messages.append({"contact": contact, "sid": message.sid, "status": status})
+            except Exception as e:
+                logger.error(f"Failed to send alert to {contact}: {str(e)}")
+                sent_messages.append({"contact": contact, "error": str(e)})
+        all_delivered = all(msg.get("status") == "delivered" for msg in sent_messages if "status" in msg)
+        return {
+            "message": "SOS alert processed",
+            "sent_messages": sent_messages,
+            "simulated": False,
+            "all_delivered": all_delivered
+        }
+    except ValueError as ve:
+        logger.info("Twilio credentials missing, simulating message")
+        for contact in request.emergency_contacts:
+            logger.info(f"Would send alert to {contact} - SIMULATION ONLY")
+        return {"message": "SOS alert simulated (Twilio credentials missing)", "simulated": True, "all_delivered": False}
     except Exception as e:
         logger.error(f"Failed to process SOS request: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send SOS alert: {str(e)}")
+
+# Fix 2: Add retry logic for Ollama to handle deployment instability
+from tenacity import retry, stop_after_attempt, wait_fixed
+
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+def ollama_chat(question):
+    return ollama.chat(model="mistral", messages=[{"role": "user", "content": question}])
 
 @app.post("/chat")
 async def chat_with_janani(request: ChatRequest):
     try:
         formatted_question = f"As a maternal health assistant named Janani, please answer: {request.question}"
-        try:
-            response = ollama.chat(model="mistral", messages=[{"role": "user", "content": formatted_question}])
-            return {"answer": response['message']['content']}
-        except Exception as e:
-            logger.error(f"Ollama error: {e}")
-            return {"answer": f"Sorry, I couldn’t process your request: {str(e)}"}
+        response = ollama_chat(formatted_question)
+        return {"answer": response['message']['content']}
     except Exception as e:
+        logger.error(f"Ollama error: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing chat request: {str(e)}")
 
 @app.post("/predict_risk")
@@ -174,4 +184,4 @@ async def test():
     return {"message": "Server is alive!"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)  # Local only; Render overrides this
