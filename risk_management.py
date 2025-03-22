@@ -14,7 +14,7 @@ def initialize_risk_model():
     global scaler, best_rf, label_encoder
     # Use relative path
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = os.path.join(BASE_DIR, "data", "Maternal Health Risk Data Set.csv")
+    dataset_path = os.path.join(BASE_DIR, "data", "Maternal_Health_Risk_DataSet.csv")
     try:
         df = pd.read_csv(dataset_path)
     except FileNotFoundError:
