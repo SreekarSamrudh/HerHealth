@@ -7,7 +7,7 @@ COPY backend/main.py .
 COPY fetus_health.py .
 COPY risk_management.py .
 COPY data/fetal_health.csv .
-COPY data/Maternal Health Risk Data Set.csv .
+COPY data/Maternal_Health_Risk_DataSet.csv .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN ollama serve & sleep 5 && ollama pull mistral
 EXPOSE 8000
