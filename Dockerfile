@@ -11,7 +11,7 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 WORKDIR /app
 
 COPY requirements.txt .
-COPY main.py .
+COPY backend/main.py .
 COPY fetus_health.py .
 COPY risk_management.py .
 
