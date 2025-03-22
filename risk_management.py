@@ -65,7 +65,7 @@ if __name__ == "__main__":
     initialize_risk_model()
     # Use relative path here too
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = os.path.join(BASE_DIR, "data", "Maternal Health Risk Data Set.csv")
+    dataset_path = os.path.join(BASE_DIR, "data", "Maternal_Health_Risk_DataSet.csv")
     df = pd.read_csv(dataset_path)
     df['RiskLevel'] = label_encoder.fit_transform(df['RiskLevel'])
     X = df[['Age', 'SystolicBP', 'DiastolicBP', 'BS', 'BodyTemp', 'HeartRate']]
