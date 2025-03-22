@@ -4,8 +4,8 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 WORKDIR /app
 COPY requirements.txt .
 COPY backend/main.py .
-COPY backend/fetus_health.py .
-COPY backend/risk_management.py .
+COPY fetus_health.py .
+COPY risk_management.py .
 COPY data/fetal_health.csv . 
 COPY data/Maternal Health Risk Data Set.csv . 
 RUN pip install --no-cache-dir -r requirements.txt
