@@ -14,5 +14,5 @@ geopy==2.4.1
 pydantic==2.5.2
 python-dotenv==1.0.0
 twilio==8.10.2
-ollama==0.1.1
+ollama==0.4.7
 tenacity==8.2.3
