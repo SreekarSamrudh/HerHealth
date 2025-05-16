@@ -17,6 +17,9 @@ The application consists of a Streamlit frontend for user interaction and a Fast
 - **User-Friendly Interface**: Built with Streamlit, featuring a custom navigation bar and interactive elements for data input and results display.
 
 ---
+![image](https://github.com/user-attachments/assets/243b9a9b-b7a0-4cee-a666-c7825644c8fa)
+![image](https://github.com/user-attachments/assets/1f7b8f63-acc1-41b2-8a8c-85e7eb783b0c)
+![image](https://github.com/user-attachments/assets/71272ed1-e765-42e2-9c91-3dc46d167176)
 
 ## 🗂️ Project Structure
 
