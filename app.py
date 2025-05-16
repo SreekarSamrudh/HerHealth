@@ -5,7 +5,7 @@ import geocoder
 import base64
 import time
 from geopy.geocoders import Nominatim  # For address-to-coordinates conversion
-import osf
+import os
 API_BASE_URL = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000")
 
 # Function to encode images as base64
