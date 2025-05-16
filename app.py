@@ -1201,5 +1201,4 @@ with st.container():
                     """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Footer
 st.markdown('<div class="footer">© 2025 HerHealth | Powered by GynaeGenius | All rights reserved</div>', unsafe_allow_html=True)
