@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*env/
+*venv/
+*.env
+.env.*
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Streamlit
+.streamlit/secrets.toml # If you create one locally, don't commit it
+
+# OS generated files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+
+streamlit
+streamlit-lottie
+requests
+pyarrow
+geocoder
