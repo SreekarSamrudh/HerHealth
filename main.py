@@ -174,4 +174,5 @@ async def test():
     return {"message": "Server is alive!"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    port = int(os.getenv("PORT", 8000)) # Default to 8000 if PORT not set
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -5,6 +5,8 @@ import geocoder
 import base64
 import time
 from geopy.geocoders import Nominatim  # For address-to-coordinates conversion
+import os
+API_BASE_URL = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000")
 
 # Function to encode images as base64
 def get_base64_of_image(file_path):
@@ -906,7 +908,7 @@ with st.container():
             if latitude is not None and longitude is not None:
                 try:
                     with st.spinner("Sending alert..."):
-                        response = requests.post("http://127.0.0.1:8000/sos", json={
+                        response = requests.post("API_BASE_URL/sos", json={
                             "latitude": latitude,
                             "longitude": longitude,
                             "emergency_contacts": ["+917075735181"]
@@ -1042,7 +1044,7 @@ with st.container():
                     st.session_state.messages.append({"role": "human", "content": reply})
                     with st.spinner("Janani is thinking..."):
                         try:
-                            response = requests.post("http://127.0.0.1:8000/chat", json={"question": reply})
+                            response = requests.post("API_BASE_URL/chat", json={"question": reply})
                             response.raise_for_status()
                             answer = response.json().get("answer", "Sorry, I couldn’t process your request.")
                         except requests.exceptions.RequestException as e:
@@ -1062,7 +1064,7 @@ with st.container():
                 st.session_state.messages.append({"role": "human", "content": question})
                 with st.spinner("Janani is thinking..."):
                     try:
-                        response = requests.post("http://127.0.0.1:8000/chat", json={"question": question})
+                        response = requests.post("API_BASE_URL/chat", json={"question": question})
                         response.raise_for_status()
                         answer = response.json().get("answer", "Sorry, I couldn’t process your request.")
                     except requests.exceptions.RequestException as e:
@@ -1095,7 +1097,7 @@ with st.container():
         if st.button("Predict Health Risk", key="predict_health_button"):
             with st.spinner("Analyzing..."):
                 try:
-                    response = requests.post("http://127.0.0.1:8000/predict_risk", json={
+                    response = requests.post("API_BASE_URL/predict_risk", json={
                         "age": age, "systolic_bp": systolic_bp, "diastolic_bp": diastolic_bp,
                         "bs": bs, "body_temp": body_temp, "heart_rate": heart_rate
                     })
@@ -1154,7 +1156,7 @@ with st.container():
         if st.button("Predict Fetal Health", key="predict_fetal_button"):
             with st.spinner("Analyzing..."):
                 try:
-                    response = requests.post("http://127.0.0.1:8000/predict_fetal_health", json={
+                    response = requests.post("API_BASE_URL/predict_fetal_health", json={
                         "baseline_value": baseline_value,
                         "accelerations": accelerations,
                         "fetal_movement": fetal_movement,
