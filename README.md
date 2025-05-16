@@ -171,3 +171,9 @@ streamlit run app.py
 - [OpenWeatherMap](https://openweathermap.org/)
 - [Ollama](https://ollama.com/)
 - [Hugging Face](https://huggingface.co/)
+
+
+## 📜 Author
+
+This project was created by [SreekarSamrudh]  
+© 2025. All rights reserved.
