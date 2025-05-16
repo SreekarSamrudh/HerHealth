@@ -1,6 +1,21 @@
-
+# Streamlit Frontend & General HTTP
 streamlit
 streamlit-lottie
 requests
-pyarrow
 geocoder
+geopy
+
+# FastAPI Backend & Server
+fastapi
+uvicorn[standard]
+gunicorn
+
+# Data Handling and Machine Learning (Core)
+numpy
+pandas
+scikit-learn  # Covers RandomForest, StandardScaler, MinMaxScaler, LabelEncoder, model_selection, etc.
+
+# API Communication & Utilities
+twilio
+ollama
+python-dotenv # For local .env loading; server will use platform-set env vars
